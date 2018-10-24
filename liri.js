@@ -20,6 +20,12 @@ var input = process.argv.slice(3).join(" ");
 // Set Up Command Functionality
 output = function (command, input) {
     if (command === 'do-what-it-says') {
+         //Log command
+         fs.appendFile("log.txt", command + '\n', function(err) {
+            if (err) {
+              return console.log(err);
+            }
+          });
         //Read the file
         fs.readFile('random.txt', 'utf8', function (err, contents) {
             //Split the contents into an array
@@ -35,6 +41,7 @@ output = function (command, input) {
 
     if (command === 'concert-this') {
         //Replace Invalid Inputs with Appropriate Text
+        var origInput = input;
         var input = input.replace(' ', '+');
         input = input.replace('/', '%252F');
         input = input.replace('?', '%253F');
@@ -45,13 +52,26 @@ output = function (command, input) {
         request(queryUrl, function (error, response, body) {
             // If the request is successful
             if (!error && response.statusCode === 200) {
+                //Log Command
+                fs.appendFile("log.txt", command + " " + origInput + '\n', function(err) {
+                    if (err) {
+                      return console.log(err);
+                    }
+                  });
                 // Post Concert Info
                 for (i = 0; i < JSON.parse(body).length; i++) {
-                    console.log('Venue: ' + JSON.parse(body)[i].venue.name);
-                    console.log('Venue Location: ' + JSON.parse(body)[i].venue.city + ', '
-                        + JSON.parse(body)[i].venue.region + " " + JSON.parse(body)[i].venue.country);
-                    console.log('Date: ' + moment((JSON.parse(body)[i].datetime)).format("MM/DD/YY"));
-                    console.log(" ")
+
+                    var textOutput = 'Venue: ' + JSON.parse(body)[i].venue.name + '\nVenue Location: ' + JSON.parse(body)[i].venue.city + ', '
+                    + JSON.parse(body)[i].venue.region + " " + JSON.parse(body)[i].venue.country +
+                    '\nDate: ' + moment((JSON.parse(body)[i].datetime)).format("MM/DD/YY") +'\n';
+
+                    console.log(textOutput);
+
+                    fs.appendFile("log.txt", textOutput + '\n', function(err) {
+                        if (err) {
+                          return console.log(err);
+                        }
+                      });
                 }
             }
         });
@@ -73,16 +93,22 @@ output = function (command, input) {
                 artists.push(" " + data.tracks.items[0].album.artists[i].name);
             }
 
-            // Log the retrieved data
-            console.log('Artists:' + artists);
-            console.log('Song Title: ' + data.tracks.items[0].name);
-            console.log('Preview Link: ' + data.tracks.items[0].preview_url);
-            console.log('Album: ' + data.tracks.items[0].album.name);
+            var textOutput = 'Artists:' + artists + '\nSong Title: ' + data.tracks.items[0].name + 
+            '\nPreview Link: ' + data.tracks.items[0].preview_url + '\nAlbum: ' + data.tracks.items[0].album.name;
+
+            console.log(textOutput);
+
+            fs.appendFile("log.txt", command + " " + input + '\n' + textOutput + '\n\n', function(err) {
+                if (err) {
+                  return console.log(err);
+                }
+              });
         });
     }
 
     // Set up movie commands
     if (command === 'movie-this') {
+        var origInput = input;
         var input = input.replace(" ", "+");
         if (input === '') {
             input = 'Mr+Nobody';
@@ -94,14 +120,22 @@ output = function (command, input) {
             // If the request is successful
             if (!error && response.statusCode === 200) {
                 // Post Movie Info
-                console.log('Title: ' + JSON.parse(body).Title)
-                console.log('Release Year: ' + JSON.parse(body).Year);
-                console.log('IMDB Rating: ' + JSON.parse(body).Ratings[0].Value);
-                console.log('Rotten Tomatoes Rating: ' + JSON.parse(body).Ratings[1].Value);
-                console.log('Production Country: ' + JSON.parse(body).Country);
-                console.log('Language: ' + JSON.parse(body).Language);
-                console.log('Plot: ' + JSON.parse(body).Plot);
-                console.log('Actors: ' + JSON.parse(body).Actors);
+                var textOutput = 'Title: ' + JSON.parse(body).Title +
+                '\nRelease Year: ' + JSON.parse(body).Year +
+                '\nIMDB Rating: ' + JSON.parse(body).Ratings[0].Value +
+                '\nRotten Tomatoes Rating: ' + JSON.parse(body).Ratings[1].Value +
+                '\nProduction Country: ' + JSON.parse(body).Country +
+                '\nLanguage: ' + JSON.parse(body).Language +
+                '\nPlot: ' + JSON.parse(body).Plot +
+                '\nActors: ' + JSON.parse(body).Actors;
+
+                console.log(textOutput);
+
+                fs.appendFile("log.txt", command + " " + origInput + '\n' + textOutput + '\n\n', function(err) {
+                    if (err) {
+                      return console.log(err);
+                    }
+                  });
             }
         });
     }
